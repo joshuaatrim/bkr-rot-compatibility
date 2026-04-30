@@ -1,0 +1,157 @@
+# ------------------------------------------------------------
+# Visual Studio / IDE
+# ------------------------------------------------------------
+
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.rsuser
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.example.json
+
+# ------------------------------------------------------------
+# Build output
+# ------------------------------------------------------------
+
+bin/
+obj/
+[Bb]uild/
+[Bb]uilds/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+AnyCPU/
+
+# MSBuild / NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+project.lock.json
+project.assets.json
+
+# ------------------------------------------------------------
+# Bannerlord module build output
+# ------------------------------------------------------------
+# Keep the module folder structure, but do not commit compiled files.
+
+module/**/bin/Win64_Shipping_Client/*.dll
+module/**/bin/Win64_Shipping_Client/*.pdb
+module/**/bin/Win64_Shipping_Client/*.xml
+module/**/bin/Win64_Shipping_Client/*.mdb
+
+module/**/bin/Gaming.Desktop.x64_Shipping_Client/*.dll
+module/**/bin/Gaming.Desktop.x64_Shipping_Client/*.pdb
+module/**/bin/Gaming.Desktop.x64_Shipping_Client/*.xml
+module/**/bin/Gaming.Desktop.x64_Shipping_Client/*.mdb
+
+# Temporary copied module folders or deployment output
+deploy/
+dist/
+release/
+releases/
+package/
+packages-output/
+*.zip
+*.7z
+*.rar
+
+# ------------------------------------------------------------
+# Local game/mod dependency references
+# ------------------------------------------------------------
+# Do not commit TaleWorlds, Banner Kings Redux, Realm of Thrones,
+# BLSE, Harmony, ButterLib, MCM, UIExtenderEx, or other external binaries.
+
+external/*
+!external/README.md
+!external/.gitkeep
+
+lib/*
+!lib/README.md
+!lib/.gitkeep
+
+references/*
+!references/README.md
+!references/.gitkeep
+
+# ------------------------------------------------------------
+# Local configuration
+# ------------------------------------------------------------
+
+Directory.Build.props
+Local.Build.props
+*.local.props
+*.local.targets
+appsettings.local.json
+
+# ------------------------------------------------------------
+# Logs / crash dumps
+# ------------------------------------------------------------
+
+*.log
+*.dmp
+*.mdmp
+*.crash
+crashes/
+logs/
+CrashDumps/
+
+# Bannerlord / BLSE / Harmony local logs if copied into repo
+BLSE.log
+harmony.log
+rgl_log_*.txt
+rgl_log_errors_*.txt
+
+# ------------------------------------------------------------
+# Generated diagnostics / data dumps
+# ------------------------------------------------------------
+
+generated/
+diagnostics-output/
+data-dumps/
+rot-id-dumps/
+bkrot-dumps/
+
+# Keep future documentation-friendly exports if explicitly added.
+!docs/**/*.md
+!docs/**/*.csv
+
+# ------------------------------------------------------------
+# Test output
+# ------------------------------------------------------------
+
+TestResults/
+coverage/
+coverage.xml
+*.coverage
+*.coveragexml
+
+# ------------------------------------------------------------
+# OS junk
+# ------------------------------------------------------------
+
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ------------------------------------------------------------
+# Temporary files
+# ------------------------------------------------------------
+
+*.tmp
+*.temp
+*.bak
+*.orig
+*.swp
+*.cache
+~$*
