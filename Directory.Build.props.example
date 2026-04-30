@@ -1,0 +1,7 @@
+<Project>
+  <PropertyGroup>
+    <!-- Copy this file to Directory.Build.props and update the path for your machine. -->
+    <BannerlordDir>C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordDir>
+    <BannerlordBinDir>$(BannerlordDir)\bin\Win64_Shipping_Client</BannerlordBinDir>
+  </PropertyGroup>
+</Project>

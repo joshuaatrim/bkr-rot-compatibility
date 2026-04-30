@@ -7,6 +7,9 @@
     <RootNamespace>BannerKingsRedux.RealmOfThrones</RootNamespace>
     <AssemblyName>BannerKingsRedux.RealmOfThrones</AssemblyName>
 
+		<PlatformTarget>x64</PlatformTarget>
+		<Prefer32Bit>false</Prefer32Bit>
+
     <Version>0.1.0</Version>
     <Authors>Joshua Trim</Authors>
     <Product>BannerKingsRedux.RealmOfThrones</Product>
@@ -24,10 +27,6 @@
     <ModuleId>BannerKingsRedux.RealmOfThrones</ModuleId>
     <ModuleBuildDir>$(MSBuildProjectDirectory)\builds\$(ModuleId)\</ModuleBuildDir>
     <OutputPath>$(ModuleBuildDir)bin\Win64_Shipping_Client\</OutputPath>
-
-    <!-- Local Bannerlord install path. Can be overridden later in Directory.Build.props. -->
-    <BannerlordDir Condition="'$(BannerlordDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordDir>
-    <BannerlordBinDir>$(BannerlordDir)\bin\Win64_Shipping_Client</BannerlordBinDir>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
@@ -67,5 +66,19 @@
       DestinationFiles="@(ModuleTemplateFiles->'$(ModuleBuildDir)%(RecursiveDir)%(Filename)%(Extension)')"
       SkipUnchangedFiles="true" />
   </Target>
+	
+  <Target Name="ValidateBannerlordReferences" BeforeTargets="ResolveReferences">
+  <Error
+    Condition="'$(BannerlordBinDir)' == ''"
+    Text="BannerlordBinDir is not set. Copy Directory.Build.props.example to Directory.Build.props and set BannerlordDir." />
+
+  <Error
+    Condition="!Exists('$(BannerlordBinDir)\TaleWorlds.Library.dll')"
+    Text="Could not find TaleWorlds.Library.dll at $(BannerlordBinDir). Check Directory.Build.props." />
+
+  <Error
+    Condition="!Exists('$(BannerlordBinDir)\TaleWorlds.MountAndBlade.dll')"
+    Text="Could not find TaleWorlds.MountAndBlade.dll at $(BannerlordBinDir). Check Directory.Build.props." />
+</Target>
 
 </Project>
