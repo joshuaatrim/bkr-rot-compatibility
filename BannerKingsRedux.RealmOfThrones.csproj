@@ -1,0 +1,71 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+
+    <RootNamespace>BannerKingsRedux.RealmOfThrones</RootNamespace>
+    <AssemblyName>BannerKingsRedux.RealmOfThrones</AssemblyName>
+
+    <Version>0.1.0</Version>
+    <Authors>Joshua Trim</Authors>
+    <Product>BannerKingsRedux.RealmOfThrones</Product>
+    <Description>Compatibility patch for Banner Kings Redux and Realm of Thrones.</Description>
+    <Copyright>Copyright © 2026 Joshua Trim</Copyright>
+
+    <Deterministic>true</Deterministic>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+
+    <!-- Prevent SDK-style builds from appending net472 to the output path. -->
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+
+    <!-- Bannerlord module/package layout -->
+    <ModuleId>BannerKingsRedux.RealmOfThrones</ModuleId>
+    <ModuleBuildDir>$(MSBuildProjectDirectory)\builds\$(ModuleId)\</ModuleBuildDir>
+    <OutputPath>$(ModuleBuildDir)bin\Win64_Shipping_Client\</OutputPath>
+
+    <!-- Local Bannerlord install path. Can be overridden later in Directory.Build.props. -->
+    <BannerlordDir Condition="'$(BannerlordDir)' == ''">C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordDir>
+    <BannerlordBinDir>$(BannerlordDir)\bin\Win64_Shipping_Client</BannerlordBinDir>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <DefineConstants>TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="TaleWorlds.Library">
+      <HintPath>$(BannerlordBinDir)\TaleWorlds.Library.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+
+    <Reference Include="TaleWorlds.MountAndBlade">
+      <HintPath>$(BannerlordBinDir)\TaleWorlds.MountAndBlade.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ModuleTemplateFiles Include="src\_module\**\*.*" />
+  </ItemGroup>
+
+  <Target Name="CopyModuleTemplate" BeforeTargets="Build">
+    <MakeDir Directories="$(ModuleBuildDir)" />
+    <Copy
+      SourceFiles="@(ModuleTemplateFiles)"
+      DestinationFiles="@(ModuleTemplateFiles->'$(ModuleBuildDir)%(RecursiveDir)%(Filename)%(Extension)')"
+      SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
