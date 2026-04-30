@@ -1,4 +1,4 @@
-# BannerKingsRedux.RealmOfThrones
+# Banner Kings Redux - Realm of Thrones Compatibility
 
 Compatibility patch for Banner Kings Redux and Realm of Thrones for Mount & Blade II: Bannerlord.
 
