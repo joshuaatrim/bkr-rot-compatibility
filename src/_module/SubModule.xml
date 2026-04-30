@@ -1,0 +1,44 @@
+<Module>
+	<Name value="Banner Kings Redux - Realm of Thrones Compatibility Patch"/>
+	<Id value="BannerKingsRedux.RealmOfThrones"/>
+	<Version value="v0.1.0"/>
+	<SingleplayerModule value="true"/>
+	<MultiplayerModule value="false"/>
+
+	<DependedModules>
+  <DependedModule Id="Native"/>
+  <DependedModule Id="SandBoxCore"/>
+  <DependedModule Id="Sandbox"/>
+  <DependedModule Id="CustomBattle"/>
+  <DependedModule Id="StoryMode"/>
+  <DependedModule Id="BirthAndDeath"/>
+  <DependedModule Id="NavalDLC"/>
+
+  <DependedModule Id="Bannerlord.Harmony"/>
+  <DependedModule Id="Bannerlord.ButterLib"/>
+  <DependedModule Id="Bannerlord.UIExtenderEx"/>
+
+  <DependedModule Id="BannerKings.Redux"/>
+
+  <DependedModule Id="ROT-Core"/>
+  <DependedModule Id="ROT-Content"/>
+  <DependedModule Id="ROT_Map"/>
+  <DependedModule Id="ROT-Dragon"/>
+</DependedModules>
+
+	<SubModules>
+		<SubModule>
+			<Name value="BannerKingsRedux.RealmOfThrones"/>
+			<DLLName value="BannerKingsRedux.RealmOfThrones.dll"/>
+			<SubModuleClassType value="BannerKingsRedux.RealmOfThrones.SubModule"/>
+			<Tags>
+				<Tag key="DedicatedServerType" value="none"/>
+				<Tag key="IsNoRenderModeElement" value="false"/>
+			</Tags>
+		</SubModule>
+	</SubModules>
+
+	<Xmls>
+		<!-- Keep empty for Milestone 1. -->
+	</Xmls>
+</Module>
