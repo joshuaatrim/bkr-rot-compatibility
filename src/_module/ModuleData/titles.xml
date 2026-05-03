@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base type="string">
+  <titles autoGenerate="true">
+
+    <!--
+      BannerKingsRedux.RealmOfThrones Layer 2 title data.
+
+      Keep this file ROT-only.
+      Do not copy Banner Kings Redux Calradia title entries here.
+
+      Next step after data discovery:
+      - add one verified ROT kingdom
+      - add one verified duchy / paramountcy
+      - add one verified county
+      - add one verified barony
+    -->
+
+  </titles>
+</base>

@@ -6,25 +6,30 @@
 	<MultiplayerModule value="false"/>
 
 	<DependedModules>
-  <DependedModule Id="Native"/>
-  <DependedModule Id="SandBoxCore"/>
-  <DependedModule Id="Sandbox"/>
-  <DependedModule Id="CustomBattle"/>
-  <DependedModule Id="StoryMode"/>
-  <DependedModule Id="BirthAndDeath"/>
-  <DependedModule Id="NavalDLC"/>
+		<DependedModule Id="Native"/>
+		<DependedModule Id="SandBoxCore"/>
+		<DependedModule Id="Sandbox"/>
+		<DependedModule Id="CustomBattle"/>
+		<DependedModule Id="StoryMode"/>
+		<DependedModule Id="BirthAndDeath"/>
+		<DependedModule Id="NavalDLC"/>
 
-  <DependedModule Id="Bannerlord.Harmony"/>
-  <DependedModule Id="Bannerlord.ButterLib"/>
-  <DependedModule Id="Bannerlord.UIExtenderEx"/>
+		<DependedModule Id="Bannerlord.Harmony"/>
+		<DependedModule Id="Bannerlord.ButterLib"/>
+		<DependedModule Id="Bannerlord.UIExtenderEx"/>
 
-  <DependedModule Id="BannerKings.Redux"/>
+		<DependedModule Id="BannerKings.Redux"/>
 
-  <DependedModule Id="ROT-Core"/>
-  <DependedModule Id="ROT-Content"/>
-  <DependedModule Id="ROT_Map"/>
-  <DependedModule Id="ROT-Dragon"/>
-</DependedModules>
+		<DependedModule Id="ROT-Core"/>
+		<DependedModule Id="ROT-Content"/>
+		<DependedModule Id="ROT_Map"/>
+		<DependedModule Id="ROT-Dragon"/>
+	</DependedModules>
+
+	<DependedModuleMetadatas>
+		<DependedModuleMetadata id="BannerKings.Redux" order="LoadBeforeThis" version="v1.5.8.0" />
+		<DependedModuleMetadata id="ROT-Core" order="LoadBeforeThis" />
+	</DependedModuleMetadatas>
 
 	<SubModules>
 		<SubModule>

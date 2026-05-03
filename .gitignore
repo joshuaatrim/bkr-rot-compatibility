@@ -122,9 +122,13 @@ data-dumps/
 rot-id-dumps/
 bkrot-dumps/
 
-# Keep future documentation-friendly exports if explicitly added.
+# Keep curated documentation-friendly exports if explicitly added.
 !docs/**/*.md
 !docs/**/*.csv
+
+# Raw dump JSON should stay in ignored dump folders. If a curated JSON file is
+# ever worth committing, explicitly unignore that specific path.
+docs/**/*.json
 
 # ------------------------------------------------------------
 # Test output

@@ -1,7 +1,18 @@
 <Project>
-  <PropertyGroup>
-    <!-- Copy this file to Directory.Build.props and update the path for your machine. -->
-    <BannerlordDir>C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordDir>
-    <BannerlordBinDir>$(BannerlordDir)\bin\Win64_Shipping_Client</BannerlordBinDir>
-  </PropertyGroup>
+	<PropertyGroup>
+		<!-- Copy this file to Directory.Build.props and update the paths for your machine. -->
+
+		<BannerlordDir>C:\Program Files (x86)\Steam\steamapps\common\Mount &amp; Blade II Bannerlord</BannerlordDir>
+		<BannerlordBinDir>$(BannerlordDir)\bin\Win64_Shipping_Client</BannerlordBinDir>
+
+		<!-- Banner Kings Redux -->
+		<BKRModuleDir>$(BannerlordDir)\Modules\BannerKings.Redux</BKRModuleDir>
+		<BKRBinDir>$(BKRModuleDir)\bin\Win64_Shipping_Client</BKRBinDir>
+
+		<!-- Realm of Thrones module folders -->
+		<ROTCoreModuleDir>$(BannerlordDir)\Modules\ROT-Core</ROTCoreModuleDir>
+		<ROTContentModuleDir>$(BannerlordDir)\Modules\ROT-Content</ROTContentModuleDir>
+		<ROTMapModuleDir>$(BannerlordDir)\Modules\ROT_Map</ROTMapModuleDir>
+		<ROTDragonModuleDir>$(BannerlordDir)\Modules\ROT-Dragon</ROTDragonModuleDir>
+	</PropertyGroup>
 </Project>

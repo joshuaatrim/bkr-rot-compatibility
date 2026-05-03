@@ -2,6 +2,9 @@
 
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using BannerKingsRedux.RealmOfThrones.Compatibility;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.Core;
 
 namespace BannerKingsRedux.RealmOfThrones
 {
@@ -23,6 +26,16 @@ namespace BannerKingsRedux.RealmOfThrones
             InformationManager.DisplayMessage(
                 new InformationMessage("[BKR-ROT] Milestone 1 empty module initialized.")
             );
+        }
+
+        protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
+        {
+            base.OnGameStart(game, gameStarterObject);
+
+            if (game.GameType is Campaign && gameStarterObject is CampaignGameStarter campaignStarter)
+            {
+                campaignStarter.AddBehavior(new BkrRotContentBehavior());
+            }
         }
     }
 }
