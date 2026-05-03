@@ -18,6 +18,7 @@ param(
     [string[]]$ModuleDir,
     [string]$OutputDir,
     [switch]$IncludeXPath,
+    [switch]$SkipBroadTables,
     [switch]$IncludeRawSubModuleElements
 )
 
@@ -148,6 +149,51 @@ function Get-AttributeValue {
     return ""
 }
 
+function Get-HashValue {
+    param(
+        [Parameter(Mandatory = $true)][hashtable]$Values,
+        [Parameter(Mandatory = $true)][string[]]$Names
+    )
+
+    foreach ($name in $Names) {
+        if ($Values.ContainsKey($name)) {
+            return [string]$Values[$name]
+        }
+    }
+
+    return ""
+}
+
+function Split-LocalizedText {
+    param([string]$Value)
+
+    if ([string]::IsNullOrWhiteSpace($Value)) {
+        return [pscustomobject]@{
+            LocalizationKey = ""
+            DisplayText = ""
+        }
+    }
+
+    if ($Value -match "^\{\{=([^}]+)\}\}(.*)$") {
+        return [pscustomobject]@{
+            LocalizationKey = $matches[1]
+            DisplayText = $matches[2]
+        }
+    }
+
+    if ($Value -match "^\{=([^}]+)\}(.*)$") {
+        return [pscustomobject]@{
+            LocalizationKey = $matches[1]
+            DisplayText = $matches[2]
+        }
+    }
+
+    return [pscustomobject]@{
+        LocalizationKey = ""
+        DisplayText = $Value
+    }
+}
+
 function Get-AttributesJson {
     param([Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element)
 
@@ -231,6 +277,24 @@ function Find-AncestorByLocalName {
     return $null
 }
 
+function Get-XsltTemplateMatch {
+    param([Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element)
+
+    $node = $Element.ParentNode
+    while ($null -ne $node) {
+        if ($node.NodeType -eq [System.Xml.XmlNodeType]::Element -and $node.LocalName -ieq "template") {
+            $match = Get-AttributeValue -Element $node -Names @("match")
+            if (-not [string]::IsNullOrWhiteSpace($match)) {
+                return $match
+            }
+        }
+
+        $node = $node.ParentNode
+    }
+
+    return ""
+}
+
 function New-ElementRecord {
     param(
         [Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element,
@@ -248,53 +312,13 @@ function New-ElementRecord {
         }
     }
 
-    $identifier = ""
-    foreach ($key in @("id", "Id", "stringId", "StringId")) {
-        if ($attributes.ContainsKey($key)) {
-            $identifier = $attributes[$key]
-            break
-        }
-    }
-
-    $nameAttribute = ""
-    foreach ($key in @("name", "Name")) {
-        if ($attributes.ContainsKey($key)) {
-            $nameAttribute = $attributes[$key]
-            break
-        }
-    }
-
-    $valueAttribute = ""
-    foreach ($key in @("value", "Value")) {
-        if ($attributes.ContainsKey($key)) {
-            $valueAttribute = $attributes[$key]
-            break
-        }
-    }
-
-    $culture = ""
-    foreach ($key in @("culture", "Culture")) {
-        if ($attributes.ContainsKey($key)) {
-            $culture = $attributes[$key]
-            break
-        }
-    }
-
-    $owner = ""
-    foreach ($key in @("owner", "Owner")) {
-        if ($attributes.ContainsKey($key)) {
-            $owner = $attributes[$key]
-            break
-        }
-    }
-
-    $faction = ""
-    foreach ($key in @("faction", "Faction")) {
-        if ($attributes.ContainsKey($key)) {
-            $faction = $attributes[$key]
-            break
-        }
-    }
+    $identifier = Get-HashValue -Values $attributes -Names @("id", "Id", "stringId", "StringId")
+    $nameAttribute = Get-HashValue -Values $attributes -Names @("name", "Name")
+    $textAttribute = Get-HashValue -Values $attributes -Names @("text", "Text")
+    $valueAttribute = Get-HashValue -Values $attributes -Names @("value", "Value")
+    $culture = Get-HashValue -Values $attributes -Names @("culture", "Culture")
+    $owner = Get-HashValue -Values $attributes -Names @("owner", "Owner")
+    $faction = Get-HashValue -Values $attributes -Names @("faction", "Faction")
 
     $xpath = ""
     if ($IncludeXPath) {
@@ -313,10 +337,17 @@ function New-ElementRecord {
         Depth = Get-ElementDepth -Element $Element
         Identifier = $identifier
         NameAttribute = $nameAttribute
+        TextAttribute = $textAttribute
         ValueAttribute = $valueAttribute
         Culture = $culture
         Owner = $owner
         Faction = $faction
+        Occupation = Get-HashValue -Values $attributes -Names @("occupation", "Occupation")
+        IsHero = Get-HashValue -Values $attributes -Names @("is_hero", "IsHero")
+        IsFemale = Get-HashValue -Values $attributes -Names @("is_female", "IsFemale")
+        DefaultGroup = Get-HashValue -Values $attributes -Names @("default_group", "DefaultGroup")
+        SkillTemplate = Get-HashValue -Values $attributes -Names @("skill_template", "SkillTemplate")
+        XsltTemplateMatch = ""
         AttributeCount = $Element.Attributes.Count
         DirectText = Get-DirectText -Element $Element
     }
@@ -331,6 +362,17 @@ function New-DomainRecord {
         [string]$ComponentType = ""
     )
 
+    $label = $ElementRecord.NameAttribute
+    if ([string]::IsNullOrWhiteSpace($label)) {
+        $label = $ElementRecord.TextAttribute
+    }
+    if ([string]::IsNullOrWhiteSpace($label)) {
+        $label = $ElementRecord.ValueAttribute
+    }
+
+    $localized = Split-LocalizedText -Value $label
+    $xsltTemplateMatch = Get-XsltTemplateMatch -Element $Element
+
     return [pscustomobject]@{
         Kind = $Kind
         ModuleId = $ElementRecord.ModuleId
@@ -340,14 +382,112 @@ function New-DomainRecord {
         XPath = $ElementRecord.XPath
         Identifier = $ElementRecord.Identifier
         NameAttribute = $ElementRecord.NameAttribute
+        TextAttribute = $ElementRecord.TextAttribute
         ValueAttribute = $ElementRecord.ValueAttribute
+        LocalizationKey = $localized.LocalizationKey
+        DisplayText = $localized.DisplayText
         Culture = $ElementRecord.Culture
         Owner = $ElementRecord.Owner
         Faction = $ElementRecord.Faction
+        Occupation = $ElementRecord.Occupation
+        IsHero = $ElementRecord.IsHero
+        IsFemale = $ElementRecord.IsFemale
+        XsltTemplateMatch = $xsltTemplateMatch
         ParentSettlementId = $ParentSettlementId
         ComponentType = $ComponentType
         AttributesJson = Get-AttributesJson -Element $Element
         DirectText = $ElementRecord.DirectText
+    }
+}
+
+function New-NamedObjectRecord {
+    param(
+        [Parameter(Mandatory = $true)]$ElementRecord,
+        [Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element
+    )
+
+    $localized = Split-LocalizedText -Value $ElementRecord.NameAttribute
+    $xsltTemplateMatch = Get-XsltTemplateMatch -Element $Element
+
+    return [pscustomobject]@{
+        ModuleId = $ElementRecord.ModuleId
+        SourceKind = $ElementRecord.SourceKind
+        RelativePath = $ElementRecord.RelativePath
+        ElementIndex = $ElementRecord.ElementIndex
+        XPath = $ElementRecord.XPath
+        ElementName = $ElementRecord.ElementName
+        Identifier = $ElementRecord.Identifier
+        NameAttribute = $ElementRecord.NameAttribute
+        LocalizationKey = $localized.LocalizationKey
+        DisplayName = $localized.DisplayText
+        Culture = $ElementRecord.Culture
+        Owner = $ElementRecord.Owner
+        Faction = $ElementRecord.Faction
+        Occupation = $ElementRecord.Occupation
+        IsHero = $ElementRecord.IsHero
+        IsFemale = $ElementRecord.IsFemale
+        XsltTemplateMatch = $xsltTemplateMatch
+        AttributeCount = $ElementRecord.AttributeCount
+    }
+}
+
+function New-CharacterRecord {
+    param(
+        [Parameter(Mandatory = $true)]$ElementRecord,
+        [Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element
+    )
+
+    $localized = Split-LocalizedText -Value $ElementRecord.NameAttribute
+    $xsltTemplateMatch = Get-XsltTemplateMatch -Element $Element
+
+    return [pscustomobject]@{
+        ModuleId = $ElementRecord.ModuleId
+        SourceKind = $ElementRecord.SourceKind
+        RelativePath = $ElementRecord.RelativePath
+        ElementIndex = $ElementRecord.ElementIndex
+        XPath = $ElementRecord.XPath
+        Identifier = $ElementRecord.Identifier
+        NameAttribute = $ElementRecord.NameAttribute
+        LocalizationKey = $localized.LocalizationKey
+        DisplayName = $localized.DisplayText
+        Culture = $ElementRecord.Culture
+        Occupation = $ElementRecord.Occupation
+        IsHero = $ElementRecord.IsHero
+        IsFemale = $ElementRecord.IsFemale
+        DefaultGroup = $ElementRecord.DefaultGroup
+        SkillTemplate = $ElementRecord.SkillTemplate
+        XsltTemplateMatch = $xsltTemplateMatch
+        AttributesJson = Get-AttributesJson -Element $Element
+    }
+}
+
+function New-LocalizationStringRecord {
+    param(
+        [Parameter(Mandatory = $true)]$ElementRecord,
+        [Parameter(Mandatory = $true)][System.Xml.XmlElement]$Element
+    )
+
+    $label = $ElementRecord.TextAttribute
+    if ([string]::IsNullOrWhiteSpace($label)) {
+        $label = $ElementRecord.ValueAttribute
+    }
+
+    $localized = Split-LocalizedText -Value $label
+    $xsltTemplateMatch = Get-XsltTemplateMatch -Element $Element
+
+    return [pscustomobject]@{
+        ModuleId = $ElementRecord.ModuleId
+        SourceKind = $ElementRecord.SourceKind
+        RelativePath = $ElementRecord.RelativePath
+        ElementIndex = $ElementRecord.ElementIndex
+        XPath = $ElementRecord.XPath
+        StringId = $ElementRecord.Identifier
+        TextAttribute = $ElementRecord.TextAttribute
+        ValueAttribute = $ElementRecord.ValueAttribute
+        LocalizationKey = $localized.LocalizationKey
+        DisplayText = $localized.DisplayText
+        XsltTemplateMatch = $xsltTemplateMatch
+        AttributesJson = Get-AttributesJson -Element $Element
     }
 }
 
@@ -458,10 +598,15 @@ $fileRows = New-Object System.Collections.Generic.List[object]
 $parseErrorRows = New-Object System.Collections.Generic.List[object]
 $elementRows = New-Object System.Collections.Generic.List[object]
 $attributeRows = New-Object System.Collections.Generic.List[object]
+$elementCount = 0
+$attributeCount = 0
 $cultureRows = New-Object System.Collections.Generic.List[object]
 $kingdomRows = New-Object System.Collections.Generic.List[object]
 $clanRows = New-Object System.Collections.Generic.List[object]
 $heroRows = New-Object System.Collections.Generic.List[object]
+$characterRows = New-Object System.Collections.Generic.List[object]
+$namedObjectRows = New-Object System.Collections.Generic.List[object]
+$localizationStringRows = New-Object System.Collections.Generic.List[object]
 $settlementRows = New-Object System.Collections.Generic.List[object]
 $settlementComponentRows = New-Object System.Collections.Generic.List[object]
 $navalMarkerRows = New-Object System.Collections.Generic.List[object]
@@ -585,22 +730,34 @@ foreach ($modulePathValue in $configuredModuleDirs) {
                 $elementIndex = 0
                 foreach ($element in @($document.SelectNodes("//*"))) {
                     $record = New-ElementRecord -Element $element -ModuleId $moduleId -ModuleFolder $moduleFolder -RelativePath $relativePath -SourceKind $sourceKind -ElementIndex $elementIndex
-                    [void]$elementRows.Add($record)
+                    $elementCount++
+                    $attributeCount += $element.Attributes.Count
 
-                    foreach ($attribute in @($element.Attributes)) {
-                        [void]$attributeRows.Add([pscustomobject]@{
-                            ModuleId = $moduleId
-                            ModuleFolder = $moduleFolder
-                            SourceKind = $sourceKind
-                            RelativePath = $relativePath
-                            ElementIndex = $record.ElementIndex
-                            XPath = $record.XPath
-                            ElementName = $record.ElementName
-                            ElementIdentifier = $record.Identifier
-                            AttributeName = $attribute.LocalName
-                            AttributeNamespaceUri = $attribute.NamespaceURI
-                            AttributeValue = $attribute.Value
-                        })
+                    if (-not $SkipBroadTables) {
+                        [void]$elementRows.Add($record)
+                    }
+
+                    if (-not $SkipBroadTables) {
+                        foreach ($attribute in @($element.Attributes)) {
+                            [void]$attributeRows.Add([pscustomobject]@{
+                                ModuleId = $moduleId
+                                ModuleFolder = $moduleFolder
+                                SourceKind = $sourceKind
+                                RelativePath = $relativePath
+                                ElementIndex = $record.ElementIndex
+                                XPath = $record.XPath
+                                ElementName = $record.ElementName
+                                ElementIdentifier = $record.Identifier
+                                AttributeName = $attribute.LocalName
+                                AttributeNamespaceUri = $attribute.NamespaceURI
+                                AttributeValue = $attribute.Value
+                            })
+                        }
+                    }
+
+                    if (-not [string]::IsNullOrWhiteSpace($record.Identifier) -and
+                        -not [string]::IsNullOrWhiteSpace($record.NameAttribute)) {
+                        [void]$namedObjectRows.Add((New-NamedObjectRecord -ElementRecord $record -Element $element))
                     }
 
                     switch ($element.LocalName.ToLowerInvariant()) {
@@ -624,8 +781,18 @@ foreach ($modulePathValue in $configuredModuleDirs) {
                             [void]$heroRows.Add((New-DomainRecord -ElementRecord $record -Kind "Hero" -Element $element))
                             break
                         }
+                        "npccharacter" {
+                            [void]$characterRows.Add((New-CharacterRecord -ElementRecord $record -Element $element))
+                            break
+                        }
                         "settlement" {
                             [void]$settlementRows.Add((New-DomainRecord -ElementRecord $record -Kind "Settlement" -Element $element))
+                            break
+                        }
+                        "string" {
+                            if (-not [string]::IsNullOrWhiteSpace($record.Identifier)) {
+                                [void]$localizationStringRows.Add((New-LocalizationStringRecord -ElementRecord $record -Element $element))
+                            }
                             break
                         }
                     }
@@ -666,7 +833,11 @@ foreach ($modulePathValue in $configuredModuleDirs) {
             $elementIndex = 0
             foreach ($element in @($document.SelectNodes("//*"))) {
                 $record = New-ElementRecord -Element $element -ModuleId $moduleId -ModuleFolder $moduleFolder -RelativePath "SubModule.xml" -SourceKind "submodule" -ElementIndex $elementIndex
-                [void]$elementRows.Add($record)
+                $elementCount++
+                $attributeCount += $element.Attributes.Count
+                if (-not $SkipBroadTables) {
+                    [void]$elementRows.Add($record)
+                }
                 $elementIndex++
             }
         }
@@ -687,12 +858,17 @@ Export-Table -Rows $moduleRows -Path (Join-Path $OutputDir "modules.csv")
 Export-Table -Rows $dependencyRows -Path (Join-Path $OutputDir "module_dependencies.csv")
 Export-Table -Rows $fileRows -Path (Join-Path $OutputDir "files.csv")
 Export-Table -Rows $parseErrorRows -Path (Join-Path $OutputDir "parse_errors.csv")
-Export-Table -Rows $elementRows -Path (Join-Path $OutputDir "elements.csv")
-Export-Table -Rows $attributeRows -Path (Join-Path $OutputDir "attributes.csv")
+if (-not $SkipBroadTables) {
+    Export-Table -Rows $elementRows -Path (Join-Path $OutputDir "elements.csv")
+    Export-Table -Rows $attributeRows -Path (Join-Path $OutputDir "attributes.csv")
+}
 Export-Table -Rows $cultureRows -Path (Join-Path $OutputDir "cultures.csv")
 Export-Table -Rows $kingdomRows -Path (Join-Path $OutputDir "kingdoms.csv")
 Export-Table -Rows $clanRows -Path (Join-Path $OutputDir "clans.csv")
 Export-Table -Rows $heroRows -Path (Join-Path $OutputDir "heroes.csv")
+Export-Table -Rows $characterRows -Path (Join-Path $OutputDir "characters.csv")
+Export-Table -Rows $namedObjectRows -Path (Join-Path $OutputDir "named_objects.csv")
+Export-Table -Rows $localizationStringRows -Path (Join-Path $OutputDir "localization_strings.csv")
 Export-Table -Rows $settlementRows -Path (Join-Path $OutputDir "settlements.csv")
 Export-Table -Rows $settlementComponentRows -Path (Join-Path $OutputDir "settlement_components.csv")
 Export-Table -Rows $navalMarkerRows -Path (Join-Path $OutputDir "naval_markers.csv")
@@ -704,12 +880,16 @@ $summary = [ordered]@{
     ModuleCount = $moduleRows.Count
     ModuleDataFileCount = $fileRows.Count
     ParseErrorCount = $parseErrorRows.Count
-    ElementCount = $elementRows.Count
-    AttributeCount = $attributeRows.Count
+    ElementCount = $elementCount
+    AttributeCount = $attributeCount
+    BroadTablesSkipped = [bool]$SkipBroadTables
     CultureCount = $cultureRows.Count
     KingdomCount = $kingdomRows.Count
     ClanOrFactionCount = $clanRows.Count
     HeroCount = $heroRows.Count
+    CharacterCount = $characterRows.Count
+    NamedObjectCount = $namedObjectRows.Count
+    LocalizationStringCount = $localizationStringRows.Count
     SettlementCount = $settlementRows.Count
     SettlementComponentCount = $settlementComponentRows.Count
     NavalMarkerCount = $navalMarkerRows.Count
@@ -726,9 +906,10 @@ Export-Json -Value $cultureRows -Path (Join-Path $OutputDir "cultures.json")
 Export-Json -Value $kingdomRows -Path (Join-Path $OutputDir "kingdoms.json")
 Export-Json -Value $clanRows -Path (Join-Path $OutputDir "clans.json")
 Export-Json -Value $heroRows -Path (Join-Path $OutputDir "heroes.json")
+Export-Json -Value $characterRows -Path (Join-Path $OutputDir "characters.json")
 Export-Json -Value $settlementRows -Path (Join-Path $OutputDir "settlements.json")
 Export-Json -Value $settlementComponentRows -Path (Join-Path $OutputDir "settlement_components.json")
 
 Write-Host "ROT static data dump written to: $OutputDir"
-Write-Host ("Modules: {0}; files: {1}; elements: {2}; attributes: {3}; parse errors: {4}" -f $moduleRows.Count, $fileRows.Count, $elementRows.Count, $attributeRows.Count, $parseErrorRows.Count)
-Write-Host ("Cultures: {0}; kingdoms: {1}; clans/factions: {2}; heroes: {3}; settlements: {4}" -f $cultureRows.Count, $kingdomRows.Count, $clanRows.Count, $heroRows.Count, $settlementRows.Count)
+Write-Host ("Modules: {0}; files: {1}; elements: {2}; attributes: {3}; parse errors: {4}" -f $moduleRows.Count, $fileRows.Count, $elementCount, $attributeCount, $parseErrorRows.Count)
+Write-Host ("Cultures: {0}; kingdoms: {1}; clans/factions: {2}; heroes: {3}; characters: {4}; settlements: {5}" -f $cultureRows.Count, $kingdomRows.Count, $clanRows.Count, $heroRows.Count, $characterRows.Count, $settlementRows.Count)

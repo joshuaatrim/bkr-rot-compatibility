@@ -38,6 +38,7 @@ North star: make Banner Kings Redux feel native in Realm of Thrones, not merely 
 - For tasks that touch module loading, always consider launcher behavior and runtime load order, not just C# compilation.
 - Suggest updates to AGENTS.md, especially if information contained becomes outdated or incorrect, but also when new additions are appropriate.
 - Suggest creation of agent skills when they are likely to be helpful in upcoming milestones.
+- Suggest removing files that are no longer necessary or useful, including old data dumps and skills, especially if they can interfere with proper context.
 
 ## Repository layout
 
@@ -362,7 +363,9 @@ When implementing a dumper:
 
 - Source data is found in installed ROT modules (eg: '$<bannerlorddir>/Modules/ROT-Core/ModuleData' )
 - Use all .xml and .xslt as source material
+- Treat `.xslt` files as data sources, not only merge instructions; they can contain ID-to-name and replacement-object relationships such as lord IDs mapped to named ROT characters.
 - Start static installed-file discovery with `tools/Export-RotData.ps1`; add a live in-game dumper later for runtime-only data.
+- Use `tools/Search-RotData.ps1` for manual lookup/debugging across generated focused CSVs before hardcoding or documenting relationships.
 - Require joined or associated data to be linked by ID or another deterministic reference. No guessing or inference. 
 - Include module ID/load-order information.
 - Avoid requiring debug/helper modules.

@@ -26,6 +26,9 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Export-RotData.ps1 -
 
 # Include slower computed element paths in the broad element/attribute dumps.
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Export-RotData.ps1 -IncludeXPath
+
+# Generate only focused curation/debug tables, skipping huge elements/attributes CSVs.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Export-RotData.ps1 -SkipBroadTables
 ```
 
 Primary outputs:
@@ -35,11 +38,37 @@ Primary outputs:
 - `elements.csv`
 - `attributes.csv`
 - `cultures.csv`, `kingdoms.csv`, `clans.csv`, `heroes.csv`
+- `characters.csv`, including `NPCCharacter` rows from `.xml` and `.xslt`
+- `named_objects.csv`, linking object IDs to localized/display names
+- `localization_strings.csv`, extracting string IDs and text
 - `settlements.csv` and `settlement_components.csv`
 - `naval_markers.csv`
-- `summary.json` and focused JSON files
+- `summary.json` and selected focused JSON files
 
 Generated dumps are intentionally ignored by git.
+
+## ROT data search
+
+`Search-RotData.ps1` searches focused dump CSVs and prints related data for
+people, clans, kingdoms, and settlements. It auto-selects the newest dump that
+contains `characters.csv` and `named_objects.csv`.
+
+Run from the repository root:
+
+```powershell
+# Person lookup, including clan/kingdom when linked.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Search-RotData.ps1 "Stannis"
+
+# Settlement lookup, including owner clan and kingdom.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Search-RotData.ps1 "Dragonstone" -Kind Settlement
+
+# Clan or kingdom lookup, including controlled settlements.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Search-RotData.ps1 "Baratheon,Stannis" -Kind Clan
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Search-RotData.ps1 "dragonstone" -Kind Kingdom
+
+# Machine-readable output.
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\Search-RotData.ps1 "town_EW1" -Exact -Json
+```
 
 Possible future tools:
 
